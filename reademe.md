@@ -1,0 +1,1 @@
+To create schemas run npx prisma migrate dev
