@@ -3,6 +3,7 @@ import { z } from 'zod'
 import axios from 'axios'
 import 'dotenv/config'
 import prisma from '../lib/prisma'
+import UserAgent from 'useragent'
 
 export async function authRoutes(app: FastifyInstance) {
   app.post('/register', async (req, res) => {
@@ -10,14 +11,27 @@ export async function authRoutes(app: FastifyInstance) {
       code: z.string(),
     })
 
+    const deviceType = req.headers['x-device-type']
+
+    let GITHUB_CLIENT_ID
+    let GITHUB_CLIENT_SECRET
+
+    if (deviceType === 'mobile') {
+      GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID_MOBILE
+      GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET_MOBILE
+    } else if (deviceType === 'web') {
+      GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID_WEB
+      GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET_WEB
+    }
+
     const { code } = bodySchema.parse(req.body)
     const accessTokenResponse = await axios.post(
       'https://github.com/login/oauth/access_token',
       null,
       {
         params: {
-          client_id: process.env.GITHUB_CLIENT_ID,
-          client_secret: process.env.GITHUB_CLIENT_SECRET,
+          client_id: GITHUB_CLIENT_ID,
+          client_secret: GITHUB_CLIENT_SECRET,
           code,
         },
         headers: {
