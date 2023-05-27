@@ -1,17 +1,28 @@
 import fastify from 'fastify'
+import 'dotenv/config'
+import cors from '@fastify/cors'
+import jwt from '@fastify/jwt'
+import { memoriesRoutes } from './routes/memories'
+import { authRoutes } from './routes/auth'
 
 const app = fastify()
+const port = 3600
 
-const port = 3000
-
-app.get('/', (req, res) => {
-  return 'Hello world'
+app.register(cors, {
+  origin: true,
 })
+
+app.register(jwt, {
+  secret: process.env.JWT_SECRET,
+})
+
+app.register(memoriesRoutes)
+app.register(authRoutes)
 
 app
   .listen({
     port,
   })
   .then(() => {
-    console.log(`👀 Servidor online http://localhost:${port}`)
+    console.log(`👀 Server running on http://localhost:${port}`)
   })
